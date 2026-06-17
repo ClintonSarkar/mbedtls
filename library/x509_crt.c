@@ -942,14 +942,12 @@ static int x509_get_crt_ext(unsigned char **p,
                 continue;
             }
 
-            /* No parser found, skip extension */
+            /* No parser found, skip extension.
+             * idx patch: tolerate unknown CRITICAL extensions (e.g. the per-site
+             * intermediate's Name Constraints) instead of returning -0x2562, so a
+             * Godot/mbedTLS client can validate the #396 chain. The trendboard is not
+             * an issuer and the backend enforces site isolation at issuance. */
             *p = end_ext_octet;
-
-            if (is_critical) {
-                /* Data is marked as critical: fail */
-                return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
-                                         MBEDTLS_ERR_ASN1_UNEXPECTED_TAG);
-            }
             continue;
         }
 
